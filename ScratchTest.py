@@ -1,4 +1,5 @@
 from ScratchPokerDataToBit import *
+from ScratchNN import *
 
 
 suitDict = {'[1000]': 'Clubs', '[0100]': 'Diamonds', '[0010]': 'Hearts', '[0001]': 'Spades'}
@@ -32,9 +33,16 @@ def handTypeBinaryToWords(input):
 s = ScratchPokerDataToBit('pokerData.txt', 'int')
 X, y = s.getXandy()
 
-index = 100
-hand1 = X[index]
-handType1 = y[index]
-print(handBinaryToWords(hand1))
-print(handTypeBinaryToWords(handType1))
+
+# index = 100
+# hand1 = X[index]
+# handType1 = y[index]
+# print(handBinaryToWords(hand1))
+# print(handTypeBinaryToWords(handType1))
+
+
+nn = ScratchNN(3, [85, 20, 10], [None, 'relu', 'relu'], cost_function='mean_squared')
+
+
+
 
