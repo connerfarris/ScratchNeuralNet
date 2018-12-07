@@ -18,7 +18,7 @@ print("Training...")
 
 # train
 one_hot_targets_train = np.eye(num_classes)[iris_y_train]
-nn = ScratchNN(4, [4, 255, 128, 3], [None, "sigmoid", "tanh", "softmax"], cost_function="mean_squared")
+nn = ScratchNN(4, [4, 255, 128, 3], [None, "sigmoid", "relu", "softmax"], cost_function="mean_squared")
 nn.train(batch_size=1, inputs=iris_X_train, labels=one_hot_targets_train, num_epochs=100, learning_rate=0.001, filename="irissavepoint.pkl")
 
 print("Testing...")
