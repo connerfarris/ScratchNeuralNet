@@ -113,10 +113,13 @@ class ScratchNN:
         total = 0
         correct = 0
         for i in range(len(a)):
-            total += 1
+            total = total + 1
+            # print(self.layers[self.num_layers - 1].activations[i], a[i], labels[i])
+            print(a[i], labels[i])
             if np.equal(a[i], labels[i]).all():
-                correct += 1
-        print("Accuracy: ", correct * 100 / total)
+                correct = correct + 1
+        # print("Accuracy: ", correct * 100 / total)
+        print("Accuracy: " + str(correct) + "/" + str(total))
 
     def load_model(self, filename):
         dill.load_session(filename)
@@ -132,3 +135,7 @@ class Layer:
         else:
             self.weights_for_layer = None
 
+    def __str__(self):
+        return 'NodeNum: ' + str(self.num_nodes_in_layer) + '\nActivationFunction: ' + str(self.activation_function) \
+                + '\nActivations Size: ' + str(self.activations.shape) + '\nWeights Size: ' + str(self.weights_for_layer.shape) \
+                + '\nActivations: ' + str(self.activations) + '\nWeights: ' + str(self.weights_for_layer)
