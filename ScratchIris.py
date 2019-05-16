@@ -7,7 +7,7 @@ print("Starting...")
 num_classes = 3
 iris_X = load_iris().data
 iris_y = load_iris().target
-np.random.seed(84)
+np.random.seed(3)
 indices = np.random.permutation(len(iris_X))
 iris_X_train = iris_X[indices[:-10]]
 iris_y_train = iris_y[indices[:-10]]
@@ -17,9 +17,9 @@ iris_y_test = iris_y[indices[-10:]]
 print("Training...")
 
 # train
-one_hot_targets_train = np.eye(num_classes)[iris_y_train]
-nn = ScratchNN(4, [4, 255, 128, 3], [None, "sigmoid", "relu", "softmax"], cost_function="mean_squared")
-nn.train(batch_size=1, inputs=iris_X_train, labels=one_hot_targets_train, num_epochs=100, learning_rate=0.001, filename="irissavepoint.pkl")
+training_targets = np.eye(num_classes)[iris_y_train]
+nn = ScratchNN(4, [4, 255, 128, 3], [None, "relu", "relu", "relu"], cost_function="mean_squared")
+nn.train(batch_size=1, inputs=iris_X_train, labels=training_targets, num_epochs=100, learning_rate=1, filename="irissavepoint.pkl")
 
 print("Testing...")
 
