@@ -42,14 +42,23 @@ class ScratchNN:
 				self.layers[i + 1].activations = self.softmax(temp)
 			elif self.layers[i + 1].activation_function == "relu":
 				self.layers[i + 1].activations = self.relu(temp)
-			elif self.layers[i + 1].activation_function == "tanh":
-				self.layers[i + 1].activations = self.tanh(temp)
+			elif self.layers[i + 1].activation_function == "leakyRelu":
+				self.layers[i + 1].activations = self.leakyRelu(temp)
 			else:
 				self.layers[i + 1].activations = temp
 
 	def relu(self, layer):
 		layer[layer < 0] = 0
 		return layer
+
+	def reluDerivative(self, layer):
+		layer[layer <= 0] = 0
+		layer[layer > 0] = 1
+		return layer
+
+	def leakyRelu(self, layer):
+		out = np.where(layer > 0, layer, layer * 0.01)
+		return out
 
 	def softmax(self, layer):
 		exp = np.exp(layer)
@@ -60,9 +69,6 @@ class ScratchNN:
 
 	def sigmoid(self, layer):
 		return np.divide(1, np.add(1, np.exp(layer)))
-
-	def tanh(self, layer):
-		return np.tanh(layer)
 
 	def calculate_error(self, labels):
 		if len(labels[0]) != self.layers[self.num_layers - 1].num_nodes_in_layer:
@@ -132,7 +138,7 @@ class Layer:
 		self.activations = np.zeros([num_nodes_in_layer, 1])
 		if num_nodes_in_next_layer != 0:
 			self.weights_for_layer = np.random.normal(0, 0.001, size=(num_nodes_in_layer, num_nodes_in_next_layer))
-			self.biases_for_layer = np.zeros(size=(num_nodes_in_layer, num_nodes_in_next_layer))
+			self.biases_for_layer = np.zeros(shape=(num_nodes_in_layer, num_nodes_in_next_layer))
 		else:
 			self.weights_for_layer = None
 
