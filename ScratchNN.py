@@ -4,20 +4,28 @@ import dill
 
 class ScratchNN:
 
-	def __init__(self, num_layers, num_nodes, activation_function, cost_function):
+	def __init__(self, inputs, targets, num_layers, num_nodes, activation_function, cost_function):
+		self.inputs = inputs
+		self.targets = targets
 		self.num_layers = num_layers
 		self.num_nodes = num_nodes
 		self.layers = []
 		self.cost_function = cost_function
 
-		for i in range(num_layers):
-			if i != num_layers - 1:
-				layer_i = Layer(num_nodes[i], num_nodes[i + 1], activation_function[i])
-			else:
-				layer_i = Layer(num_nodes[i], 0, activation_function[i])
+		for i in range(num_layers - 1):
+			layer_i = Layer(inputs.shape[0], num_nodes[i], num_nodes[i], num_nodes[i + 1], activation_function[i])
 			self.layers.append(layer_i)
 
-	def train(self, batch_size, inputs, labels, num_epochs, learning_rate, filename):
+	def train(self, num_epochs, learning_rate, filename):
+		self.learning_rate = learning_rate
+		for i in range(num_epochs):
+			print("== EPOCH: ", i, " ==")
+			self.error = 0
+			self.forward_pass(self.inputs)
+			self.calculate_error(self.targets)
+			self.back_pass(self.targets)
+
+	def train_with_batches(self, batch_size, inputs, labels, num_epochs, learning_rate, filename):
 		self.batch_size = batch_size
 		self.learning_rate = learning_rate
 		for j in range(num_epochs):
@@ -35,7 +43,8 @@ class ScratchNN:
 	def forward_pass(self, inputs):
 		self.layers[0].activations = inputs
 		for i in range(self.num_layers - 1):
-			temp = np.add(np.dot(self.layers[i].weights_for_layer, self.layers[i].activations), self.layers[i].biases_for_layer)
+			temp = np.add(np.dot(self.layers[i].activations, self.layers[i].weights_for_layer),
+						  self.layers[i].biases_for_layer)
 			if self.layers[i + 1].activation_function == "sigmoid":
 				self.layers[i + 1].activations = self.sigmoid(temp)
 			elif self.layers[i + 1].activation_function == "relu":
@@ -47,11 +56,13 @@ class ScratchNN:
 		if len(labels[0]) != self.layers[self.num_layers - 1].num_nodes_in_layer:
 			print("Error: Label is not of the same shape as output layer.")
 			print("Label: ", len(labels), " : ", len(labels[0]))
-			print("Out: ", len(self.layers[self.num_layers - 1].activations), " : ", len(self.layers[self.num_layers - 1].activations[0]))
+			print("Out: ", len(self.layers[self.num_layers - 1].activations), " : ",
+				  len(self.layers[self.num_layers - 1].activations[0]))
 			return
 
 		if self.cost_function == "mean_squared":
-			self.error = np.mean(np.divide(np.square(np.subtract(labels, self.layers[self.num_layers - 1].activations)), 2))
+			self.error = np.mean(
+				np.divide(np.square(np.subtract(labels, self.layers[self.num_layers - 1].activations)), 2))
 		elif self.cost_function == "cross_entropy":
 			self.error = np.negative(np.sum(np.multiply(labels, np.log(self.layers[self.num_layers - 1].activations))))
 
@@ -145,16 +156,15 @@ class ScratchNN:
 
 
 class Layer:
-	def __init__(self, num_nodes_in_layer, num_nodes_in_next_layer, activation_function):
-		self.num_nodes_in_layer = num_nodes_in_layer
+	def __init__(self, activation_rows, activation_columns, weight_rows, weight_columns, activation_function):
+		self.activation_rows = activation_rows
+		self.activation_columns = activation_columns
+		self.weight_rows = weight_rows
+		self.weight_columns = weight_columns
 		self.activation_function = activation_function
-		self.activations = np.zeros([num_nodes_in_layer, 1])
-		if num_nodes_in_next_layer != 0:
-			self.weights_for_layer = np.random.normal(0, 0.001, size=(num_nodes_in_layer, num_nodes_in_next_layer))
-			self.biases_for_layer = np.zeros(shape=(1, num_nodes_in_next_layer))
-		else:
-			self.weights_for_layer = None
-			self.biases_for_layer = None
+		self.activations = np.zeros(shape=(activation_rows, activation_columns))
+		self.weights_for_layer = np.random.normal(0, 0.001, size=(weight_rows, weight_columns))
+		self.biases_for_layer = np.zeros(shape=(1, weight_columns))
 
 
 def __str__(self):
@@ -164,4 +174,3 @@ def __str__(self):
 		   + '\nActivations: ' + str(self.activations) + '\nWeights: ' + str(self.weights_for_layer) \
 		   + str(self.biases_for_layer.shape) \
 		   + '\nActivations: ' + str(self.activations) + '\nBiases: ' + str(self.biases_for_layer)
-

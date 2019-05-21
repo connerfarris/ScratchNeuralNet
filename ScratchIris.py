@@ -18,7 +18,7 @@ iris_y_test = iris_y[indices[-10:]]
 
 # train
 training_targets = np.eye(num_classes)[iris_y_train]
-nn = ScratchNN(4, [4, 10, 10, 3], [None, "relu", "relu", "sigmoid"], cost_function="mean_squared")
+nn = ScratchNN(inputs=iris_X_train, targets=training_targets, num_layers=4, num_nodes=[4, 10, 10, 3], activation_function=[None, "relu", "relu", "sigmoid"], cost_function="mean_squared")
 
 # for layer in nn.layers:
 # 	print('activations shape: ' + str(layer.activations.shape))
@@ -32,13 +32,14 @@ nn = ScratchNN(4, [4, 10, 10, 3], [None, "relu", "relu", "sigmoid"], cost_functi
 # 		print('biases shape: ' + str(layer.biases_for_layer.shape))
 # 	else:
 # 		print('biases shape: None')
-# 	print('nodes in layer: ' + str(layer.num_nodes_in_layer))
+# 	print('nodes in layer: ' + str(layer.rows))
 
-nn.train(batch_size=1, inputs=iris_X_train, labels=training_targets, num_epochs=1, learning_rate=1, filename="irissavepoint.pkl")
+nn.train(num_epochs=10, learning_rate=0.1, filename="irissavepoint.pkl")
+# nn.train_with_batches(batch_size=10, inputs=iris_X_train, labels=training_targets, num_epochs=10, learning_rate=0.1, filename="irissavepoint.pkl")
 
-print("Testing...")
-
-# test
-one_hot_targets_test = np.eye(num_classes)[iris_y_test]
-nn.check_accuracy("irissavepoint.pkl", iris_X_test, one_hot_targets_test)
+# print("Testing...")
+#
+# # test
+# one_hot_targets_test = np.eye(num_classes)[iris_y_test]
+# nn.check_accuracy("irissavepoint.pkl", iris_X_test, one_hot_targets_test)
 
