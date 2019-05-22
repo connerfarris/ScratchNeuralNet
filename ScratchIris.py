@@ -18,7 +18,7 @@ iris_y_test = iris_y[indices[-10:]]
 
 # train
 training_targets = np.eye(num_classes)[iris_y_train]
-nn = ScratchNN(inputs=iris_X_train, targets=training_targets, num_layers=4, num_nodes=[4, 10, 10, 3], activation_function=[None, "relu", "relu", "sigmoid"], cost_function="mean_squared")
+nn = ScratchNN(inputs=iris_X_train, targets=training_targets, num_layers=4, num_nodes=[4, 10, 10, 3], activation_function=[None, "relu", "relu", "relu"], cost_function="mean_squared")
 
 # for layer in nn.layers:
 # 	print('activations shape: ' + str(layer.activations.shape))

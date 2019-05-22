@@ -9,6 +9,7 @@ class ScratchNN:
 		self.targets = targets
 		self.num_layers = num_layers
 		self.num_nodes = num_nodes
+		self.activation_function = activation_function
 		self.layers = []
 		self.cost_function = cost_function
 
@@ -16,14 +17,17 @@ class ScratchNN:
 			layer_i = Layer(inputs.shape[0], num_nodes[i], num_nodes[i], num_nodes[i + 1], activation_function[i])
 			self.layers.append(layer_i)
 
+		last_layer = Layer(inputs.shape[0], targets.shape[1], 0, 0, activation_function[num_layers - 1])
+		self.layers.append(last_layer)
+
 	def train(self, num_epochs, learning_rate, filename):
 		self.learning_rate = learning_rate
 		for i in range(num_epochs):
 			print("== EPOCH: ", i, " ==")
 			self.error = 0
-			self.forward_pass(self.inputs)
-			self.calculate_error(self.targets)
-			self.back_pass(self.targets)
+			self.forward_pass()
+			self.calculate_error()
+			self.back_pass()
 
 	def train_with_batches(self, batch_size, inputs, labels, num_epochs, learning_rate, filename):
 		self.batch_size = batch_size
@@ -40,65 +44,50 @@ class ScratchNN:
 			print("Error: ", self.error)
 		dill.dump_session(filename)
 
-	def forward_pass(self, inputs):
-		self.layers[0].activations = inputs
+	def forward_pass(self):
+		self.layers[0].activations = self.inputs
 		for i in range(self.num_layers - 1):
-			temp = np.add(np.dot(self.layers[i].activations, self.layers[i].weights_for_layer),
-						  self.layers[i].biases_for_layer)
+			temp1 = np.add(np.dot(self.layers[i].activations, self.layers[i].weights_for_layer), self.layers[i].biases_for_layer)
+			temp2 = np.add(np.dot(self.layers[i].activations, self.layers[i].weights_for_layer), self.layers[i].biases_for_layer)
 			if self.layers[i + 1].activation_function == "sigmoid":
-				self.layers[i + 1].activations = self.sigmoid(temp)
+				self.layers[i + 1].activations = self.sigmoid(temp1)
+				self.layers[i + 1].activations_prime = self.sigmoidDerivative(temp2)
 			elif self.layers[i + 1].activation_function == "relu":
-				self.layers[i + 1].activations = self.relu(temp)
+				self.layers[i + 1].activations = self.relu(temp1)
+				self.layers[i + 1].activations_prime = self.reluDerivative(temp2)
 			elif self.layers[i + 1].activation_function == "leakyRelu":
-				self.layers[i + 1].activations = self.leakyRelu(temp)
+				self.layers[i + 1].activations = self.leakyRelu(temp1)
+				self.layers[i + 1].activations_prime = self.leakyReluDerivative(temp2)
 
-	def calculate_error(self, labels):
-		if len(labels[0]) != self.layers[self.num_layers - 1].num_nodes_in_layer:
+	def calculate_error(self):
+		if len(self.targets[0]) != self.layers[self.num_layers - 1].activation_columns:
 			print("Error: Label is not of the same shape as output layer.")
-			print("Label: ", len(labels), " : ", len(labels[0]))
-			print("Out: ", len(self.layers[self.num_layers - 1].activations), " : ",
-				  len(self.layers[self.num_layers - 1].activations[0]))
+			print("Label: ", len(self.targets), " : ", len(self.targets[0]))
+			print("Out: ", len(self.layers[self.num_layers - 1].activations), " : ", len(self.layers[self.num_layers - 1].activations[0]))
 			return
 
 		if self.cost_function == "mean_squared":
 			self.error = np.mean(
-				np.divide(np.square(np.subtract(labels, self.layers[self.num_layers - 1].activations)), 2))
+				np.divide(np.square(np.subtract(self.targets, self.layers[self.num_layers - 1].activations)), 2))
 		elif self.cost_function == "cross_entropy":
-			self.error = np.negative(np.sum(np.multiply(labels, np.log(self.layers[self.num_layers - 1].activations))))
+			self.error = np.negative(np.sum(np.multiply(self.targets, np.log(self.layers[self.num_layers - 1].activations))))
 
-	def back_pass(self, labels):
-		# if self.cost_function == "cross_entropy" and self.layers[self.num_layers-1].activation_function == "softmax":
-		targets = labels
-		i = self.num_layers - 1
-		y = self.layers[i].activations
-		# deltaw = np.matmul(np.asarray(self.layers[i - 1].activations).T, np.multiply(y, np.multiply(1 - y, targets - y)))
-		pre_deltac = np.divide(np.square(y - targets), 2)
-		if self.layers[i].activation_function == "sigmoid":
-			deltac = self.sigmoidDerivative(pre_deltac)
-		elif self.layers[i].activation_function == "relu":
-			deltac = self.reluDerivative(pre_deltac)
-		elif self.layers[i].activation_function == "leakyRelu":
-			deltac = self.leakyReluDerivative(pre_deltac)
-		deltaw = np.dot(deltac, self.layers[i].activations.T)
-		deltab = deltac
-		new_weights = self.layers[i - 1].weights_for_layer - self.learning_rate * deltaw
-		new_biases = self.layers[i - 1].biases_for_layer - self.learning_rate * deltab
-		for i in range(i - 1, 0, -1):
-			y = self.layers[i].activations
-			pre_deltac = np.divide(np.square(y - targets), 2)
-			if self.layers[i].activation_function == "sigmoid":
-				deltac = self.sigmoidDerivative(pre_deltac)
-			elif self.layers[i].activation_function == "relu":
-				deltac = self.reluDerivative(pre_deltac)
-			elif self.layers[i].activation_function == "leakyRelu":
-				deltac = self.leakyReluDerivative(pre_deltac)
-			deltaw = np.dot(deltac, self.layers[i].activations.T)
-			deltab = deltac
-			self.layers[i].weights_for_layer = new_weights
-			new_weights = self.layers[i - 1].weights_for_layer - self.learning_rate * deltaw
-			new_biases = self.layers[i - 1].biases_for_layer - self.learning_rate * deltab
-		self.layers[0].weights_for_layer = new_weights
-		self.layers[0].biases_for_layer = new_biases
+	def back_pass(self):
+		for i in range(self.num_layers - 1, 1, -1):
+			if i == self.num_layers - 1:
+				y_hat = self.layers[i].activations
+				y = self.targets
+				self.layers[i].error = y_hat - y
+				self.layers[i].delta = np.atleast_2d(np.multiply(self.layers[i].error, self.layers[i].activations_prime))
+				activation_delta = np.dot(y_hat.T, self.layers[i].delta)
+				self.layers[i - 1].weights_for_layer -= np.multiply(self.learning_rate, activation_delta)
+			else:
+				self.layers[i].delta = np.multiply(np.dot(self.layers[i + 1].delta, self.layers[i].weights_for_layer.T), self.layers[i].activations_prime)
+				activation = self.layers[i].activations
+				delta = self.layers[i].delta
+				activation_delta = np.dot(activation.T, delta)
+				weight_diffs = np.multiply(self.learning_rate, activation_delta)
+				self.layers[i - 1].weights_for_layer -= weight_diffs
 
 	def predict(self, filename, input):
 		dill.load_session(filename)
@@ -163,8 +152,11 @@ class Layer:
 		self.weight_columns = weight_columns
 		self.activation_function = activation_function
 		self.activations = np.zeros(shape=(activation_rows, activation_columns))
+		self.activations_prime = np.zeros(shape=(activation_rows, activation_columns))
 		self.weights_for_layer = np.random.normal(0, 0.001, size=(weight_rows, weight_columns))
 		self.biases_for_layer = np.zeros(shape=(1, weight_columns))
+		self.error = np.zeros(shape=(activation_rows, activation_columns))
+		self.delta = np.atleast_2d()
 
 
 def __str__(self):
