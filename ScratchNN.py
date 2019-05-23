@@ -28,6 +28,8 @@ class ScratchNN:
 			self.forward_pass()
 			self.calculate_error()
 			self.back_pass()
+			print("Error: ", self.error)
+		dill.dump_session(filename)
 
 	def train_with_batches(self, batch_size, inputs, labels, num_epochs, learning_rate, filename):
 		self.batch_size = batch_size
@@ -73,35 +75,31 @@ class ScratchNN:
 			self.error = np.negative(np.sum(np.multiply(self.targets, np.log(self.layers[self.num_layers - 1].activations))))
 
 	def back_pass(self):
-		for i in range(self.num_layers - 1, 1, -1):
+		for i in range(self.num_layers - 1, 0, -1):
 			if i == self.num_layers - 1:
-				y_hat = self.layers[i].activations
-				y = self.targets
-				self.layers[i].error = y_hat - y
-				self.layers[i].delta = np.atleast_2d(np.multiply(self.layers[i].error, self.layers[i].activations_prime))
-				activation_delta = np.dot(y_hat.T, self.layers[i].delta)
-				self.layers[i - 1].weights_for_layer -= np.multiply(self.learning_rate, activation_delta)
+				self.layers[i].error = np.multiply(2, self.layers[i].activations - self.targets)
+				self.layers[i].delta = np.dot(self.layers[i - 1].activations.T, np.multiply(self.layers[i].error, self.layers[i].activations_prime))
+				self.layers[i - 1].weights_for_layer -= np.multiply(self.learning_rate, self.layers[i].delta)
 			else:
-				self.layers[i].delta = np.multiply(np.dot(self.layers[i + 1].delta, self.layers[i].weights_for_layer.T), self.layers[i].activations_prime)
-				activation = self.layers[i].activations
-				delta = self.layers[i].delta
-				activation_delta = np.dot(activation.T, delta)
-				weight_diffs = np.multiply(self.learning_rate, activation_delta)
-				self.layers[i - 1].weights_for_layer -= weight_diffs
+				self.layers[i].error = np.multiply(2, self.layers[i].activations - np.dot(self.layers[i + 1].activations, self.layers[i].weights_for_layer.T))
+				self.layers[i].delta = np.dot(self.layers[i - 1].activations.T, np.multiply(self.layers[i].error, self.layers[i].activations_prime))
+				self.layers[i - 1].weights_for_layer -= np.multiply(self.learning_rate, self.layers[i].delta)
 
-	def predict(self, filename, input):
+	def predict(self, filename):
 		dill.load_session(filename)
-		self.batch_size = 1
-		self.forward_pass(input)
+		# self.batch_size = 1
+		self.forward_pass(self.inputs)
 		a = self.layers[self.num_layers - 1].activations
 		a[np.where(a == np.max(a))] = 1
 		a[np.where(a != np.max(a))] = 0
 		return a
 
-	def check_accuracy(self, filename, inputs, labels):
+	def check_accuracy(self, filename, inputs, targets):
 		dill.load_session(filename)
-		self.batch_size = len(inputs)
-		self.forward_pass(inputs)
+		# self.batch_size = len(inputs)
+		self.inputs = inputs
+		self.targets = targets
+		self.forward_pass()
 		a = self.layers[self.num_layers - 1].activations
 		a[np.where(a == np.max(a))] = 1
 		a[np.where(a != np.max(a))] = 0
@@ -110,8 +108,8 @@ class ScratchNN:
 		for i in range(len(a)):
 			total = total + 1
 			# print(self.layers[self.num_layers - 1].activations[i], a[i], labels[i])
-			print(a[i], labels[i])
-			if np.equal(a[i], labels[i]).all():
+			print(a[i], targets[i])
+			if np.equal(a[i], targets[i]).all():
 				correct = correct + 1
 		# print("Accuracy: ", correct * 100 / total)
 		print("Accuracy: " + str(correct) + "/" + str(total))
@@ -140,7 +138,7 @@ class ScratchNN:
 	def sigmoid(self, layer):
 		return np.divide(1, np.add(1, np.exp(layer)))
 
-	def sigmoidDerivative(x):
+	def sigmoidDerivative(self, x):
 		return x * (1.0 - x)
 
 
