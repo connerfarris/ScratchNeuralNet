@@ -80,10 +80,11 @@ class MyNN:
 		return self.a3.argmax()
 
 
-model = MyNN(x_train / 16.0, np.array(y_train))
+model = MyNN(x_train, np.array(y_train))
 
-epochs = 1500
+epochs = 500
 for x in range(epochs):
+	print('Epoch ' + str(x))
 	model.feedforward()
 	model.backprop()
 
@@ -97,5 +98,25 @@ def get_acc(x, y):
 	return acc / len(x) * 100
 
 
-print("Training accuracy : ", get_acc(x_train / 16, np.array(y_train)))
-print("Test accuracy : ", get_acc(x_val / 16, np.array(y_val)))
+print("Training accuracy : ", get_acc(x_train, np.array(y_train)))
+print("Test accuracy : ", get_acc(x_val, np.array(y_val)))
+
+print('x_train: ' + str(x_train.shape))
+print('y_train: ' + str(y_train.shape))
+print('x_val: ' + str(x_val.shape))
+print('y_val: ' + str(y_val.shape))
+print('x: ' + str(model.x.shape))
+print('a1: ' + str(model.a1.shape))
+print('w1: ' + str(model.w1.shape))
+print('b1: ' + str(model.b1.shape))
+print('a2: ' + str(model.a2.shape))
+print('w2: ' + str(model.w2.shape))
+print('b2: ' + str(model.b2.shape))
+print('a3: ' + str(model.a3.shape))
+print('w3: ' + str(model.w3.shape))
+print('b3: ' + str(model.b3.shape))
+print('y: ' + str(model.y.shape))
+
+
+
+
