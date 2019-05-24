@@ -3,9 +3,17 @@ import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 
-dig = load_iris()
-one_hot_target = pd.get_dummies(dig.target)
-x_train, x_val, y_train, y_val = train_test_split(dig.data, one_hot_target, test_size=0.1, random_state=20)
+iris_data = load_iris().data
+iris_targets = load_iris().target
+iris_one_hot_target = pd.get_dummies(iris_targets)
+x_train, x_target, y_train, y_target = train_test_split(iris_data, iris_one_hot_target, test_size=0.1, random_state=20, shuffle=True)
+y_train = np.asarray(y_train)
+y_target = np.asarray(y_target)
+
+# print(x_train)
+# print(x_target)
+# print(y_train)
+# print(y_target)
 
 
 def sigmoid(s):
@@ -82,7 +90,7 @@ class MyNN:
 
 model = MyNN(x_train, np.array(y_train))
 
-epochs = 500
+epochs = 1000
 for x in range(epochs):
 	print('Epoch ' + str(x))
 	model.feedforward()
@@ -99,12 +107,12 @@ def get_acc(x, y):
 
 
 print("Training accuracy : ", get_acc(x_train, np.array(y_train)))
-print("Test accuracy : ", get_acc(x_val, np.array(y_val)))
+print("Test accuracy : ", get_acc(x_target, np.array(y_target)))
 
 print('x_train: ' + str(x_train.shape))
 print('y_train: ' + str(y_train.shape))
-print('x_val: ' + str(x_val.shape))
-print('y_val: ' + str(y_val.shape))
+print('x_val: ' + str(x_target.shape))
+print('y_val: ' + str(y_target.shape))
 print('x: ' + str(model.x.shape))
 print('a1: ' + str(model.a1.shape))
 print('w1: ' + str(model.w1.shape))
