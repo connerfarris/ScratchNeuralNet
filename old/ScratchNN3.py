@@ -29,7 +29,7 @@ class ScratchNN3:
 			# self.error = 0
 			self.forward_pass(inputs)
 			self.calculate_error(targets)
-			# self.back_pass(targets)
+			self.back_pass(targets)
 			print("Error: ", self.error)
 		dill.dump_session(filename)
 
@@ -79,12 +79,11 @@ class ScratchNN3:
 	def check_accuracy(self, filename, inputs, targets):
 		dill.load_session(filename)
 		# self.batch_size = len(inputs)
-		# self.inputs = inputs
-		# self.targets = targets
 		self.forward_pass(inputs)
 		a = self.layers[self.num_layers - 1].activations
-		a[np.where(a == np.max(a))] = 1
-		a[np.where(a != np.max(a))] = 0
+		# a[np.where(a == np.max(a))] = 1
+		# a[np.where(a != np.max(a))] = 0
+		a = np.rint(a)
 		total = 0
 		correct = 0
 		for i in range(len(a)):
@@ -93,8 +92,7 @@ class ScratchNN3:
 			# print(a[i], targets[i])
 			if np.equal(a[i], targets[i]).all():
 				correct = correct + 1
-		# print("Accuracy: ", correct * 100 / total)
-		print("Accuracy: " + str(correct) + "/" + str(total))
+		print("Accuracy on test: " + str(correct) + "/" + str(total))
 
 	def load_model(self, filename):
 		dill.load_session(filename)

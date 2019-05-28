@@ -1,41 +1,36 @@
+import pandas as pd
+import numpy as np
 from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
 from ScratchNN import *
 
+# initialize
+print("Initializing...")
+iris_data = load_iris().data
+iris_targets = load_iris().target
+iris_one_hot_target = pd.get_dummies(iris_targets)
+x_train, x_test, y_train, y_test = train_test_split(iris_data, iris_one_hot_target, test_size=0.1, random_state=20, shuffle=False)
+y_train = np.asarray(y_train)
+y_test = np.asarray(y_test)
+num_features = iris_data.shape[1]
+num_classes = iris_one_hot_target.shape[1]
+num_samples = x_train.shape[0]
+nodes = [num_features, num_classes]
+num_nodes_in_hidden_layers = [128, 128]
+np.random.seed(75)
+for x in range(len(num_nodes_in_hidden_layers)):
+	nodes.insert(x + 1, num_nodes_in_hidden_layers[x])
+print(nodes)
 
-print("Starting...")
-
-num_classes = 3
-iris_X = load_iris().data
-iris_y = load_iris().target
-np.random.seed(81)
-indices = np.random.permutation(len(iris_X))
-iris_X_train = iris_X[indices[:-10]] / 16
-iris_y_train = iris_y[indices[:-10]]
-iris_X_test = iris_X[indices[-10:]] / 16
-iris_y_test = iris_y[indices[-10:]]
+nn = ScratchNN(num_samples, num_nodes_list=nodes, activation_function=[None, "sigmoid", "sigmoid", "sigmoid"], cost_function="mean_squared")
 
 # train
 print("Training...")
-training_targets = np.eye(num_classes)[iris_y_train]
-nn = ScratchNN(inputs=iris_X_train, targets=training_targets, num_layers=4, num_nodes=[4, 100, 100, 3], activation_function=[None, "relu", "relu", "sigmoid"], cost_function="mean_squared")
-
-nn.train(num_epochs=1000, learning_rate=0.1, filename="irissavepoint.pkl")
-# nn.train_with_batches(batch_size=10, inputs=iris_X_train, labels=training_targets, num_epochs=10, learning_rate=0.1, filename="irissavepoint.pkl")
-
-# for i in range(num_classes):
-# 	print(nn.layers[i].error)
+nn.train(inputs=x_train, targets=y_train, num_epochs=1000, learning_rate=0.1, filename="digitssavepoint.pkl")
 
 # test
 print("Testing...")
-# one_hot_targets_test = np.eye(num_classes)[iris_y_test]
-# # nn.check_accuracy("irissavepoint.pkl", iris_X_test, one_hot_targets_test)
-# print(iris_X_test)
-# print(np.eye(num_classes)[iris_y_test])
-nn.inputs = iris_X_test
-nn.targets = np.eye(num_classes)[iris_y_test]
-nn.forward_pass()
-print(np.eye(num_classes)[iris_y_test])
-print(nn.layers[3].activations)
+nn.check_accuracy(filename="digitssavepoint.pkl", inputs=x_test, targets=y_test)
 
 
 

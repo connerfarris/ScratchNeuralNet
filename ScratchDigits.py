@@ -1,30 +1,36 @@
+import pandas as pd
+import numpy as np
 from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
 from ScratchNN import *
 
+# initialize
+print("Initializing...")
+digits_data = load_digits().data
+digits_targets = load_digits().target
+digits_one_hot_target = pd.get_dummies(digits_targets)
+x_train, x_test, y_train, y_test = train_test_split(digits_data, digits_one_hot_target, test_size=0.1, random_state=20, shuffle=False)
+y_train = np.asarray(y_train)
+y_test = np.asarray(y_test)
+num_features = digits_data.shape[1]
+num_classes = digits_one_hot_target.shape[1]
+num_samples = x_train.shape[0]
+nodes = [num_features, num_classes]
+num_nodes_in_hidden_layers = [128, 128]
+np.random.seed(75)
+for x in range(len(num_nodes_in_hidden_layers)):
+	nodes.insert(x + 1, num_nodes_in_hidden_layers[x])
+print(nodes)
 
-print("Starting...")
-
-num_classes = 10
-digits_X = load_digits().data / 16
-digits_y = load_digits().target
-
-np.random.seed(84)
-indices = np.random.permutation(len(digits_X))
-digits_X_train = digits_X[indices[:-100]]
-digits_y_train = digits_y[indices[:-100]]
-digits_X_test = digits_X[indices[-100:]]
-digits_y_test = digits_y[indices[-100:]]
-
-print("Training...")
+nn = ScratchNN(num_samples, num_nodes_list=nodes, activation_function=[None, "sigmoid", "sigmoid", "sigmoid"], cost_function="mean_squared")
 
 # train
-one_hot_targets_train = np.eye(num_classes)[digits_y_train]
-nn = ScratchNN(num_layers=4, num_nodes=[digits_X.shape[1], 500, 250, num_classes], activation_function=[None, "sigmoid", "sigmoid", "softmax"], cost_function="mean_squared")
-nn.train(batch_size=1, inputs=digits_X_train, labels=one_hot_targets_train, num_epochs=100, learning_rate=0.001, filename="digitssavepoint.pkl")
+print("Training...")
+nn.train(inputs=x_train, targets=y_train, num_epochs=1000, learning_rate=0.1, filename="digitssavepoint.pkl")
 
-# print("Testing...")
-#
-# # test
-# one_hot_targets_test = np.eye(num_classes)[iris_y_test]
-# nn.check_accuracy("digitssavepoint.pkl", iris_X_test, one_hot_targets_test)
+# test
+print("Testing...")
+nn.check_accuracy(filename="digitssavepoint.pkl", inputs=x_test, targets=y_test)
+
+
 

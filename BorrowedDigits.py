@@ -1,22 +1,15 @@
 import pandas as pd
 import numpy as np
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
-from WeightsInitializer import *
 
-w = WeightsInitializer()
 
-iris_data = load_iris().data
-iris_targets = load_iris().target
-iris_one_hot_target = pd.get_dummies(iris_targets)
-x_train, x_target, y_train, y_target = train_test_split(iris_data, iris_one_hot_target, test_size=0.1, random_state=20, shuffle=False)
+digits_data = load_digits().data
+digits_targets = load_digits().target
+digits_one_hot_target = pd.get_dummies(digits_targets)
+x_train, x_test, y_train, y_test = train_test_split(digits_data, digits_one_hot_target, test_size=0.1, random_state=20, shuffle=False)
 y_train = np.asarray(y_train)
-y_target = np.asarray(y_target)
-
-# print(x_train)
-# print(x_target)
-# print(y_train)
-# print(y_target)
+y_target = np.asarray(y_test)
 
 
 def sigmoid(s):
@@ -48,25 +41,17 @@ def error(pred, real):
 class MyNN:
 	def __init__(self, x, y):
 		self.x = x
-		neurons = 128
-		self.lr = 0.5
+		neurons = 50
+		self.lr = 0.1
 		ip_dim = x.shape[1]
 		op_dim = y.shape[1]
 
-		# self.w1 = np.random.randn(ip_dim, neurons)
-		# self.b1 = np.zeros((1, neurons))
-		# self.w2 = np.random.randn(neurons, neurons)
-		# self.b2 = np.zeros((1, neurons))
-		# self.w3 = np.random.randn(neurons, op_dim)
-		# self.b3 = np.zeros((1, op_dim))
-		self.w0 = w.weights[0]
-		self.b0 = w.biases[0]
-		self.w1 = w.weights[1]
-		self.b1 = w.biases[1]
-		self.w2 = w.weights[2]
-		self.b2 = w.biases[2]
-		self.w3 = w.weights[3]
-		self.b3 = w.biases[3]
+		self.w1 = np.random.randn(ip_dim, neurons)
+		self.b1 = np.zeros((1, neurons))
+		self.w2 = np.random.randn(neurons, neurons)
+		self.b2 = np.zeros((1, neurons))
+		self.w3 = np.random.randn(neurons, op_dim)
+		self.b3 = np.zeros((1, op_dim))
 		self.y = y
 
 	def feedforward(self):
@@ -105,7 +90,7 @@ epochs = 1
 for x in range(epochs):
 	print('Epoch ' + str(x))
 	model.feedforward()
-	# model.backprop()
+	model.backprop()
 
 
 def get_acc(x, y):
@@ -117,10 +102,9 @@ def get_acc(x, y):
 	return acc / len(x) * 100
 
 
-# print("Training accuracy : ", get_acc(x_train, np.array(y_train)))
-# print("Test accuracy : ", get_acc(x_target, np.array(y_target)))
+print("Training accuracy : ", get_acc(x_train, np.array(y_train)))
+print("Test accuracy : ", get_acc(x_test, np.array(y_test)))
 
-print(model.w3)
 
 
 # print('x_train: ' + str(x_train.shape))
