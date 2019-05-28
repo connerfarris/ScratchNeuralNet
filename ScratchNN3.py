@@ -1,6 +1,8 @@
 import numpy as np
 import dill
+from WeightsInitializer import *
 
+w = WeightsInitializer()
 
 class ScratchNN3:
 
@@ -27,15 +29,15 @@ class ScratchNN3:
 			# self.error = 0
 			self.forward_pass(inputs)
 			self.calculate_error(targets)
-			self.back_pass(targets)
+			# self.back_pass(targets)
 			print("Error: ", self.error)
 		dill.dump_session(filename)
 
 	def forward_pass(self, inputs):
 		self.layers[0].activations = inputs
-		for i in range(self.num_layers - 1):
-			self.layers[i].zed = np.add(np.dot(self.layers[i].activations, self.layers[i].weights), self.layers[i].biases)
-			self.layers[i + 1].activations = self.functionPicker(self.layers[i].zed, self.layers[i + 1].activation_function)
+		for i in range(1, self.num_layers):
+			self.layers[i].zed = np.add(np.dot(self.layers[i - 1].activations, self.layers[i].weights), self.layers[i].biases)
+			self.layers[i].activations = self.functionPicker(self.layers[i].zed, self.layers[i].activation_function)
 
 	def calculate_error(self, targets):
 		if len(targets[0]) != self.layers[self.num_layers - 1].num_nodes_in_layer:
@@ -77,9 +79,9 @@ class ScratchNN3:
 	def check_accuracy(self, filename, inputs, targets):
 		dill.load_session(filename)
 		# self.batch_size = len(inputs)
-		self.inputs = inputs
-		self.targets = targets
-		self.forward_pass()
+		# self.inputs = inputs
+		# self.targets = targets
+		self.forward_pass(inputs)
 		a = self.layers[self.num_layers - 1].activations
 		a[np.where(a == np.max(a))] = 1
 		a[np.where(a != np.max(a))] = 0
@@ -88,7 +90,7 @@ class ScratchNN3:
 		for i in range(len(a)):
 			total = total + 1
 			# print(self.layers[self.num_layers - 1].activations[i], a[i], labels[i])
-			print(a[i], targets[i])
+			# print(a[i], targets[i])
 			if np.equal(a[i], targets[i]).all():
 				correct = correct + 1
 		# print("Accuracy: ", correct * 100 / total)
@@ -97,11 +99,14 @@ class ScratchNN3:
 	def load_model(self, filename):
 		dill.load_session(filename)
 
-	def sigmoid(self, layer):
-		return np.divide(1, np.add(1, np.exp(layer)))
+	# def sigmoid(self, layer):
+	# 	return np.divide(1, np.add(1, np.exp(layer)))
 
-	def sigmoidDerivative(self, x):
-		return x * (1.0 - x)
+	def sigmoid(self, layer):
+		return 1 / (1 + np.exp(-layer))
+
+	def sigmoidDerivative(self, layer):
+		return layer * (1 - layer)
 
 	def relu(self, layer):
 		layer[layer < 0] = 0
@@ -133,11 +138,11 @@ class ScratchNN3:
 			return
 
 	def functionDerivativePicker(self, input, function):
-		if function == "sigmoidDerivative":
+		if function == "sigmoid":
 			return self.sigmoidDerivative(input)
-		elif function == "reluDerivative":
+		elif function == "relu":
 			return self.reluDerivative(input)
-		elif function == "leakyReluDerivative":
+		elif function == "leaky":
 			return self.leakyReluDerivative(input)
 		else:
 			print('Malformed function declaration.')
@@ -157,19 +162,19 @@ class Layer:
 			self.zed_delta = np.zeros(shape=(1, 1))
 			self.activations = np.zeros(shape=(sample_num, num_nodes_list[layer_id]))
 			self.activations_delta = np.zeros(shape=(sample_num, num_nodes_list[layer_id]))
-			self.weights = np.zeros(shape=(1, 1))
-			self.weights_delta = np.zeros(shape=(1, 1))
-			self.biases = np.zeros(shape=(1, 1))
-			self.biases_delta = np.zeros(shape=(1, 1))
+			# self.weights = np.zeros(shape=(1, 1))
+			self.weights = w.weights[layer_id]
+			# self.biases = np.zeros(shape=(1, 1))
+			self.biases = w.biases[layer_id]
 		else:
 			self.zed = np.zeros(shape=(sample_num, num_nodes_list[layer_id]))
 			self.zed_delta = np.zeros(shape=(sample_num, num_nodes_list[layer_id]))
 			self.activations = np.zeros(shape=(sample_num, num_nodes_list[layer_id]))
 			self.activations_delta = np.zeros(shape=(sample_num, num_nodes_list[layer_id]))
-			self.weights = np.random.normal(0, 0.001, size=(num_nodes_list[layer_id - 1], num_nodes_list[layer_id]))
-			self.weights_delta = np.random.normal(0, 0.001, size=(num_nodes_list[layer_id - 1], num_nodes_list[layer_id]))
-			self.biases = np.zeros(shape=(1, num_nodes_list[layer_id - 1]))
-			self.biases_delta = np.zeros(shape=(1, num_nodes_list[layer_id - 1]))
+			# self.weights = np.random.normal(0, 0.001, size=(num_nodes_list[layer_id - 1], num_nodes_list[layer_id]))
+			self.weights = w.weights[layer_id]
+			# self.biases = np.zeros(shape=(1, num_nodes_list[layer_id]))
+			self.biases = w.biases[layer_id]
 
 
 def __str__(self):

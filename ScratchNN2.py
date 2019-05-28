@@ -2,11 +2,14 @@ import pandas as pd
 import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
+from WeightsInitializer import *
+
+w = WeightsInitializer()
 
 iris_data = load_iris().data
 iris_targets = load_iris().target
 iris_one_hot_target = pd.get_dummies(iris_targets)
-x_train, x_target, y_train, y_target = train_test_split(iris_data, iris_one_hot_target, test_size=0.1, random_state=20, shuffle=True)
+x_train, x_target, y_train, y_target = train_test_split(iris_data, iris_one_hot_target, test_size=0.1, random_state=20, shuffle=False)
 y_train = np.asarray(y_train)
 y_target = np.asarray(y_target)
 
@@ -50,12 +53,20 @@ class MyNN:
 		ip_dim = x.shape[1]
 		op_dim = y.shape[1]
 
-		self.w1 = np.random.randn(ip_dim, neurons)
-		self.b1 = np.zeros((1, neurons))
-		self.w2 = np.random.randn(neurons, neurons)
-		self.b2 = np.zeros((1, neurons))
-		self.w3 = np.random.randn(neurons, op_dim)
-		self.b3 = np.zeros((1, op_dim))
+		# self.w1 = np.random.randn(ip_dim, neurons)
+		# self.b1 = np.zeros((1, neurons))
+		# self.w2 = np.random.randn(neurons, neurons)
+		# self.b2 = np.zeros((1, neurons))
+		# self.w3 = np.random.randn(neurons, op_dim)
+		# self.b3 = np.zeros((1, op_dim))
+		self.w0 = w.weights[0]
+		self.b0 = w.biases[0]
+		self.w1 = w.weights[1]
+		self.b1 = w.biases[1]
+		self.w2 = w.weights[2]
+		self.b2 = w.biases[2]
+		self.w3 = w.weights[3]
+		self.b3 = w.biases[3]
 		self.y = y
 
 	def feedforward(self):
@@ -90,11 +101,11 @@ class MyNN:
 
 model = MyNN(x_train, np.array(y_train))
 
-epochs = 1000
+epochs = 1
 for x in range(epochs):
 	print('Epoch ' + str(x))
 	model.feedforward()
-	model.backprop()
+	# model.backprop()
 
 
 def get_acc(x, y):
@@ -106,24 +117,27 @@ def get_acc(x, y):
 	return acc / len(x) * 100
 
 
-print("Training accuracy : ", get_acc(x_train, np.array(y_train)))
-print("Test accuracy : ", get_acc(x_target, np.array(y_target)))
+# print("Training accuracy : ", get_acc(x_train, np.array(y_train)))
+# print("Test accuracy : ", get_acc(x_target, np.array(y_target)))
 
-print('x_train: ' + str(x_train.shape))
-print('y_train: ' + str(y_train.shape))
-print('x_val: ' + str(x_target.shape))
-print('y_val: ' + str(y_target.shape))
-print('x: ' + str(model.x.shape))
-print('a1: ' + str(model.a1.shape))
-print('w1: ' + str(model.w1.shape))
-print('b1: ' + str(model.b1.shape))
-print('a2: ' + str(model.a2.shape))
-print('w2: ' + str(model.w2.shape))
-print('b2: ' + str(model.b2.shape))
-print('a3: ' + str(model.a3.shape))
-print('w3: ' + str(model.w3.shape))
-print('b3: ' + str(model.b3.shape))
-print('y: ' + str(model.y.shape))
+print(model.w3)
+
+
+# print('x_train: ' + str(x_train.shape))
+# print('y_train: ' + str(y_train.shape))
+# print('x_val: ' + str(x_target.shape))
+# print('y_val: ' + str(y_target.shape))
+# print('x: ' + str(model.x.shape))
+# print('a1: ' + str(model.a1.shape))
+# print('w1: ' + str(model.w1.shape))
+# print('b1: ' + str(model.b1.shape))
+# print('a2: ' + str(model.a2.shape))
+# print('w2: ' + str(model.w2.shape))
+# print('b2: ' + str(model.b2.shape))
+# print('a3: ' + str(model.a3.shape))
+# print('w3: ' + str(model.w3.shape))
+# print('b3: ' + str(model.b3.shape))
+# print('y: ' + str(model.y.shape))
 
 
 
