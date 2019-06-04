@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 from ScratchNN import *
 
 # manual inputs
-num_nodes_in_hidden_layers = [784, 800]
-activation_function = [None, "sigmoid", "sigmoid", "sigmoid", "sigmoid"]
+num_nodes_in_hidden_layers = [128, 128]
+activation_function = [None, "sigmoid", "sigmoid", "sigmoid", "sigmoid", "sigmoid", "sigmoid"]
 np.random.seed(75)
 
 # initialize
@@ -29,7 +29,7 @@ nn = ScratchNN(num_samples, num_nodes_list=nodes, activation_function=activation
 
 # train
 print("Training...")
-nn.train(inputs=x_train, targets=y_train, num_epochs=10000, learning_rate=0.001, filename="digitssavepoint.pkl")
+nn.train(inputs=x_train, targets=y_train, num_epochs=1000, learning_rate=0.1, filename="digitssavepoint.pkl")
 
 # test
 print("Testing...")
